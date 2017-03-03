@@ -47,21 +47,15 @@ pos_dict_index = ('c_name', 'c_text', 'icon')
 pos_dict = (
     {   # position of c_name
         'c':(10,5), 'dc':(10,5), 'g':(10,5),
-        'd2':(30,5),
+        'ec':(20,5), 'eg':(20,5),
         's':(35,5), 'ps':(35,5),
         'ca':(15,8),
-        'ec':(20,5), 'eg':(20,5)
+        'd2':(30,5)
     },
     {   # position of c_text
-        'c':(0,35), 'dc':(0,35), 'ec':(0,35), 'g':(25,35), 'eg':(25,35),
-        'd2':(20,35),
-        's':(25,35), 'ps':(25,35),
-        'ca':(0,32)
-    },
-    {   # position of icon
-        'c':(-25,0), 'dc':(-25,0), 'ec':(-25,0), 'ca':(-25,0), 'd2':(-25,0),
-        'g':(-25,0), 'eg':(-25,0),
-        's':(-24,0), 'ps':(-24,0)
+        'c':(0,35), 'dc':(0,35), 'ec':(0,35), 'g':(0,35), 'eg':(0,35),
+        's':(0,35), 'ps':(0,35), 'd2':(0,35),
+        'ca':(0,32),
     }
     )
 def settextpos(x, y, c_type, mode):
@@ -89,6 +83,17 @@ def textreform(c_text):
     return reformed, list(icons), list(frames)
 
 
+def set_correction(power, icons):
+    correction = 13*len(power) + 3
+    if '+' in power:
+        correction += 3
+    elif '-' in power:
+        correction -= 5
+    if icons:
+        correction += 2
+    return correction
+
+
 def main():
     WHITE = (255,255,255,0)
     BLACK = (0,0,0,0)
@@ -111,7 +116,6 @@ def main():
     # 一枚プロキシ作成(カードを1枚ずつ生成して貼り付けていく)
     ichimai_bg = Image.new('RGB', (1000,1400), WHITE)
     for number, line in enumerate(lines):
-        correction = 0  # パワー表記分のズレ補正初期化
         card_info = line.rstrip().split(',')
         # 最後に読み取ったカード情報の更新
         for i in range(4):
@@ -156,18 +160,15 @@ def main():
         # テキスト
         x, y = settextpos(x, y, c_type, 'c_text')
         c_text, icons, frames = textreform(c_text)
-        if frames:
-            # フレームを重ねる場合は位置補正
+        # フレームを重ねる場合は位置補正
+        if frames and not c_type.startswith('e'):
             x += 10
+        # クリーチャーの場合パワー部分を左下に最優先で配置して位置補正
         if c_type.endswith('c'):
-            # クリーチャーの場合パワー部分を左下に最優先で配置して位置補正
             power = c_text.split(' ')[0]
             draw.text((x,y), power, font=text_font, fill=BLACK)
-            correction = 13*len(power) + 30*len(icons) + 2
-            c_text = c_text.replace(power,'', 1)
-            x += correction
-        draw.text((x,y), c_text, font=text_font, fill=BLACK)
-        x, y = settextpos(x, y, c_type, 'icon')
+            c_text = c_text.replace(power,'', 1).strip()
+            x += set_correction(power, icons)
         # サバイバー / ウェーブストライカーのアイコンは透過フレーム
         for frame in frames:
             try:
@@ -178,6 +179,7 @@ def main():
             ichimai_bg.paste(frameimage, card_pos, alphamask)
         # アイコンの埋め込み
         for icon in icons:
+            x += 1   # 位置微調整
             # アイコンがなければ代替アイコンを設置
             try:
                 iconimage = seticon(icon.lower())
@@ -185,7 +187,8 @@ def main():
                 iconimage = seticon('no')
             alphamask = iconimage.split()[3]
             ichimai_bg.paste(iconimage, (x, y), alphamask)
-            x += 30     # アイコン幅+間隔の分位置補正
+            x += 24  # アイコン幅+間隔の分位置補正
+        draw.text((x+5,y), c_text, font=text_font, fill=BLACK)
     # 画像の保存
     timestamp = str(datetime.datetime.today().strftime('%Y.%m.%d_%H%M'))
     savename = os.path.basename(fname).split('.')[0] + '_' + timestamp + '.png'
