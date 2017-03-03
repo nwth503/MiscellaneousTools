@@ -7,10 +7,18 @@ import datetime
 from PIL import Image, ImageDraw, ImageFont
 
 
-def setframe(c_type):
-    c_type = c_type.replace('e','')
-    maskimgpath = 'resources/frame/' + c_type + '.png'
-    return Image.open(maskimgpath).convert('RGBA')
+def c_type_normalize(orig):
+    return orig.replace('e','').replace('x','')
+
+
+def setframe(f_name):
+    imgpath = 'resources/frame/' + f_name + '.png'
+    return Image.open(imgpath).convert('RGBA')
+
+
+def seticon(f_name):
+    imgpath = 'resources/ic-st/ic-' + f_name + '.png'
+    return Image.open(imgpath).convert('RGBA')
 
 
 cost_dict = {
@@ -26,7 +34,7 @@ def setcost(cost):
 color_dict = {
     'r':(255, 51, 51), 'f':(255, 51, 51),
     'g':(102, 255, 102), 'n':(102, 255, 102),
-    'b':(0, 255, 255),
+    'b':(0, 255, 255), 'u':(0, 255, 255),
     'k':(204, 102, 255), 'd':(204, 102, 255),
     'w':(255, 255, 0), 'y':(255, 255, 0), 'l':(255, 255, 0),
     'z':(250, 250, 250)
@@ -66,20 +74,17 @@ def settextpos(x, y, c_type, mode):
 
 def textreform(c_text):
     splitted = c_text.upper().split(' ')
+
     iconset = ('ST', 'SB', 'B', 'UB', 'DS')
     icons = sorted(set(iconset).intersection(set(splitted)), key=iconset.index)
-    for i in iconset:
-        try:
-            splitted.remove(i)
-        except:
-            pass
-    frameset = ('SV', 'WS')
-    frames = sorted(set(frameset).intersection(set(splitted)))
-    for i in frameset:
-        try:
-            splitted.remove(i)
-        except:
-            pass
+    splitted = sorted(set(splitted).difference(set(icons)), key=splitted.index)
+
+    frameset = ('SV', 'WS', 'EX')
+    frames = sorted(
+                set(frameset).intersection(set(splitted)), key=frameset.index)
+    splitted = sorted(
+                set(splitted).difference(set(frames)), key=splitted.index)
+
     reformed = ' '.join(splitted)
     return reformed, list(icons), list(frames)
 
@@ -128,15 +133,14 @@ def main():
             c_bg.paste(rectangle, (width*i,0))
 
         # 枠の貼り付け
-        mask = setframe(c_type)
+        mask = setframe(c_type_normalize(c_type))
         x = (C_WIDTH + INTERVAL)*(number % 4) + MARGIN
         y = (C_HEIGHT + INTERVAL)*int(number / 4) + MARGIN
         card_pos = (x, y)
         ichimai_bg.paste(c_bg, card_pos, mask.split()[0])
         # 進化アイコンを重ねる
         if c_type.startswith('e'):
-            imgpath = 'resources/frame/' + c_type + '.png'
-            evo_frame = Image.open(imgpath).convert('RGBA')
+            evo_frame = setframe(c_type)
             alphamask = evo_frame.split()[3]
             ichimai_bg.paste(evo_frame, card_pos, alphamask)
 
@@ -167,22 +171,18 @@ def main():
         # サバイバー / ウェーブストライカーのアイコンは透過フレーム
         for frame in frames:
             try:
-                imgpath = 'resources/frame/' + frame.lower() + '.png'
-                frameimage = Image.open(imgpath).convert('RGBA')
+                frameimage = setframe(frame.lower())
             except:
-                imgpath = 'resources/frame/clear.png'
-                frameimage = Image.open(imgpath).convert('RGBA')
+                frameimage = setframe('clear')
             alphamask = frameimage.split()[3]
             ichimai_bg.paste(frameimage, card_pos, alphamask)
         # アイコンの埋め込み
         for icon in icons:
             # アイコンがなければ代替アイコンを設置
             try:
-                imgpath = 'resources/ic-st/ic-' + icon.lower() + '.png'
-                iconimage = Image.open(imgpath).convert('RGBA')
+                iconimage = seticon(icon.lower())
             except:
-                imgpath = 'resources/ic-st/no.png'
-                iconimage = Image.open(imgpath).convert('RGBA')
+                iconimage = seticon('no')
             alphamask = iconimage.split()[3]
             ichimai_bg.paste(iconimage, (x, y), alphamask)
             x += 30     # アイコン幅+間隔の分位置補正
