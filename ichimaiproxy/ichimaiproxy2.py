@@ -94,6 +94,28 @@ def set_correction(power, icons):
     return correction
 
 
+def savenamecheck(savename):
+    count = 1
+    while os.path.isfile('save/' + savename):
+        name, ext = os.path.splitext(savename)
+        if count == 1:
+            savename = name + '_1' + ext
+        else:
+            name = name[:-1]
+            savename = name + str(count) + ext
+        count += 1
+    return savename
+
+
+def mkdir(cwdir):
+    if not os.path.isdir(cwdir + '/save'):
+        try:
+            os.mkdir(cwdir + '/save')
+        except Exception as e:
+            print('[save]フォルダの作成に失敗しました.手動作成してください.')
+    return
+
+
 def main():
     WHITE = (255,255,255,0)
     BLACK = (0,0,0,0)
@@ -105,9 +127,11 @@ def main():
 
     fname = sys.argv[1]
     # D&Dの場合はexeのパスが入るのでカレントディレクトリを移動する
-    root  = sys.argv[0].replace('ichimai.exe','')
-    if root:
-        os.chdir(root)
+    cwdir = sys.argv[0].replace('ichimai.exe','')
+    if cwdir:
+        os.chdir(cwdir)
+    else:
+        cwdir = os.getcwd()
 
     # csv読み込み
     with codecs.open(fname, 'r', 'utf_8_sig') as f_list:
@@ -192,6 +216,8 @@ def main():
     # 画像の保存
     timestamp = str(datetime.datetime.today().strftime('%Y.%m.%d_%H%M'))
     savename = os.path.basename(fname).split('.')[0] + '_' + timestamp + '.png'
+    savename = savenamecheck(savename)
+    mkdir(cwdir)
     ichimai_bg.save('save/' + savename)
     print(u'できたよ> ' + savename)
     raw_input()
