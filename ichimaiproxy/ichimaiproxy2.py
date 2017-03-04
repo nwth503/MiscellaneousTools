@@ -153,6 +153,7 @@ def main():
                     # カード名が更新された場合テキストも同時に更新する
                     last_info[i+1] = card_info[i+1]
         cost, colors, c_type, c_name, c_text = last_info
+        colors = colors.replace('5c','grkbw')   # 5C略記対応
 
         # 枠の分割彩色
         c_bg = Image.new('RGBA', (C_WIDTH,C_HEIGHT), WHITE)
