@@ -8,7 +8,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 def c_type_normalize(orig):
-    return orig.replace('e','').replace('x','')
+    normal = orig.replace(
+            'e','').replace('2c','c').replace('3','').replace('n','')
+    return normal
 
 
 def setframe(f_name):
@@ -53,13 +55,14 @@ pos_dict = (
         'd2':(30,5)
     },
     {   # position of c_text
-        'c':(0,35), 'dc':(0,35), 'ec':(0,35), 'g':(0,35), 'eg':(0,35),
-        's':(0,35), 'ps':(0,35), 'd2':(0,35),
-        'ca':(0,32),
+        'c':(0,35), 'dc':(0,35), 'g':(0,35), 's':(0,35), 'ps':(0,35),
+        'd2':(0,35),
+        'ca':(0,32)
     }
     )
 def settextpos(x, y, c_type, mode):
     pos_index = pos_dict_index.index(mode)
+    c_type = c_type_normalize(c_type)
     pos_correction = pos_dict[pos_index][c_type]
     x += pos_correction[0]
     y += pos_correction[1]
