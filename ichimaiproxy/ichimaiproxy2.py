@@ -27,7 +27,7 @@ cost_dict = {
     '1':u'①', '2':u'②', '3':u'③', '4':u'④', '5':u'⑤',
     '6':u'⑥', '7':u'⑦', '8':u'⑧', '9':u'⑨', '10':u'⑩',
     '11':u'⑪', '12':u'⑫', '13':u'⑬', '14':u'⑭', '15':u'⑮',
-    '17':u'⑰', '20':u'⑳', '25':u'㉕', '71':u'(71)', u'∞':u'(∞)'
+    '17':u'⑰', '20':u'⑳', '25':u'㉕', '71':u'71', u'∞':u'∞'
     }
 def setcost(cost):
     return cost_dict[cost]
@@ -45,12 +45,12 @@ def setcolor(color):
     return color_dict[color]
 
 
-pos_dict_index = ('c_name', 'c_text', 'icon')
+pos_dict_index = ('c_name', 'c_text')
 pos_dict = (
     {   # position of c_name
         'c':(10,5), 'dc':(10,5), 'g':(10,5),
-        'ec':(20,5), 'eg':(20,5),
         's':(35,5), 'ps':(35,5),
+        'ec':(20,5), 'eg':(20,5),
         'ca':(15,8),
         'd2':(30,5)
     },
@@ -174,6 +174,7 @@ def main():
             evo_frame = setframe(c_type)
             alphamask = evo_frame.split()[3]
             ichimai_bg.paste(evo_frame, card_pos, alphamask)
+            x += 9
 
         # 文字入れ
         draw = ImageDraw.Draw(ichimai_bg)
@@ -222,7 +223,7 @@ def main():
     savename = savenamecheck(savename)
     mkdir(cwdir)
     ichimai_bg.save('save/' + savename)
-    print(u'できたよ> ' + savename)
+    print(u'できたよ> save/' + savename)
     raw_input()
 
 if __name__ == "__main__":
