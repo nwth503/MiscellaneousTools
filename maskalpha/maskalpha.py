@@ -69,9 +69,9 @@ def main():
             errored(e, '# ERROR> rename file: ' + original)
             continue
         try:
-            bg.save(outdirpath + '/0' + fname)
+            bg.save(outdirpath + '/' + fname)
         except Exception as e:
-            errored(e, '# ERROR> save file: ' + outdirpath + '/0' + fname)
+            errored(e, '# ERROR> save file: ' + outdirpath + '/' + fname)
             continue
     raw_input('# Finished.')
     return
