@@ -7,10 +7,20 @@ import datetime
 from PIL import Image, ImageDraw, ImageFont
 
 
-def setframe(c_type):
-    c_type = c_type.replace('p','').replace('dc','c').replace('e','')
-    maskimgpath = 'resources/frame/' + c_type + '.png'
-    return Image.open(maskimgpath).convert('RGBA')
+def c_type_normalize(orig):
+    normal = orig.replace('p','').replace('dc','c').replace(
+            'e','').replace('x','')
+    return normal
+
+
+def setframe(f_name):
+    imgpath = 'resources/frame/' + f_name + '.png'
+    return Image.open(imgpath).convert('RGBA')
+
+
+def seticon(f_name):
+    imgpath = 'resources/ic-st/ic-' + f_name + '.png'
+    return Image.open(imgpath).convert('RGBA')
 
 
 cost_dict = {
@@ -66,22 +76,35 @@ def settextpos(x, y, c_type, mode):
 
 def textreform(c_text):
     splitted = c_text.upper().split(' ')
+
     iconset = ('ST', 'SB', 'B', 'UB', 'DS')
     icons = sorted(set(iconset).intersection(set(splitted)), key=iconset.index)
-    for i in iconset:
-        try:
-            splitted.remove(i)
-        except:
-            pass
+    splitted = sorted(set(splitted).difference(set(icons)))
+
     frameset = ('SV', 'WS')
     frames = sorted(set(frameset).intersection(set(splitted)))
-    for i in frameset:
-        try:
-            splitted.remove(i)
-        except:
-            pass
+    splitted = sorted(set(splitted).difference(set(frames)))
+
     reformed = ' '.join(splitted)
     return reformed, list(icons), list(frames)
+
+
+def savenamecheck(savename):
+    count = 1
+    while os.path.isfile('save/' + savename):
+        name, ext = os.path.splitext(savename)
+        if count == 1:
+            savename = name + '_1' + ext
+        else:
+            name = name[:-2]
+            savename = name + count + ext
+        count += 1
+    return savename
+
+
+def mkdir():
+    if !os.path.exists('save'):
+        os.mkdir('save')
 
 
 def main():
@@ -129,8 +152,7 @@ def main():
         ichimai_bg.paste(c_bg, card_pos, mask.split()[0])
         # 進化アイコンを重ねる
         if c_type.startswith('e'):
-            imgpath = 'resources/frame/' + c_type + '.png'
-            evo_frame = Image.open(imgpath).convert('RGBA')
+            evo_frame = setframe(c_type)
             alphamask = evo_frame.split()[3]
             ichimai_bg.paste(evo_frame, card_pos, alphamask)
 
@@ -161,30 +183,28 @@ def main():
         # サバイバー / ウェーブストライカーのアイコンは透過フレーム
         for frame in frames:
             try:
-                imgpath = 'resources/frame/' + frame.lower() + '.png'
-                frameimage = Image.open(imgpath).convert('RGBA')
+                frameimage = setframe(frame.lower())
             except:
-                imgpath = 'resources/frame/clear.png'
-                frameimage = Image.open(imgpath).convert('RGBA')
+                frameimage = setframe('clear')
             alphamask = frameimage.split()[3]
             ichimai_bg.paste(frameimage, card_pos, alphamask)
         # アイコンの埋め込み
         for icon in icons:
             # アイコンがなければ代替アイコンを設置
             try:
-                imgpath = 'resources/ic-st/ic-' + icon.lower() + '.png'
-                iconimage = Image.open(imgpath).convert('RGBA')
+                iconimage = seticon(icon.lower())
             except:
-                imgpath = 'resources/ic-st/no.png'
-                iconimage = Image.open(imgpath).convert('RGBA')
+                iconimage = seticon('no')
             alphamask = iconimage.split()[3]
             ichimai_bg.paste(iconimage, (x, y), alphamask)
             x += 30     # アイコン幅+間隔の分位置補正
     # 画像の保存
     timestamp = str(datetime.datetime.today().strftime('%Y.%m.%d_%H%M'))
     savename = os.path.basename(fname).split('.')[0] + '_' + timestamp + '.png'
+    savename = savenamecheck(savename)
+    mkdir()
     ichimai_bg.save('save/' + savename)
-    input('できたよ > ' + savename)
+    input('できたよ > ' + savename + '.png')
 
 
 if __name__ == "__main__":
