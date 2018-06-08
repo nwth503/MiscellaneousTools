@@ -24,7 +24,7 @@ def str2num(str_n):
 def pn(n):
     flag = 0
     border = 1
-    prints = (60, 70, 75, 80, 85, 90, 95, 99)
+    prints = (70, 75, 80, 85, 90, 95, 99)
     count = int(n)
     p = (1 - 1/n) ** n
     print('Start: %5d  p: %f' % (count, 1-p))
